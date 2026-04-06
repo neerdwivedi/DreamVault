@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Dream - DreamVault</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+
+    <!-- LEFT -->
+    <div style="display:flex; align-items:center; gap:20px;">
+      <a href="index.html" style="color:white; text-decoration:none;">⬅</a>
+      <div class="logo">DreamVault ✨</div>
+    </div>
+
+    <!-- RIGHT -->
+    <div style="margin-left:auto;">
+      <a href="index.html" class="link">Home</a>
+      <a href="journal.html" class="link">Journal</a>
+    </div>
+
+  </div>
+
+  <!-- FORM -->
+  <section class="hero">
+
+    <div class="hero-box">
+
+      <h1>Record Your Dream</h1>
+      <p>What did your mind show you?</p>
+
+      <!-- ✅ IMPORTANT: method + action -->
+      <form method="POST" action="save_dream.php">
+
+        <!-- TITLE -->
+        <input 
+          type="text"
+          name="title"
+          placeholder="What would you name it?"
+          required
+          style="
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 15px;
+            font-family: Poppins;
+          "
+        >
+
+        <!-- DREAM TEXT -->
+        <textarea 
+          name="description"
+          placeholder="Describe your dream..."
+          rows="5"
+          required
+          style="
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 15px;
+            font-family: Poppins;
+          "
+        ></textarea>
+
+        <!-- TAG -->
+        <select name="tag" style="
+          width: 100%;
+          padding: 10px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+          border: none;
+          font-family: Poppins;
+        ">
+          <option value="✨ Dream">✨ Dream</option>
+          <option value="😴 Weird">😴 Weird</option>
+          <option value="😱 Nightmare">😱 Nightmare</option>
+          <option value="💖 Happy">💖 Happy</option>
+        </select>
+
+        <button type="submit" class="btn-primary">
+          Save Dream
+        </button>
+
+      </form>
+
+    </div>
+
+  </section>
+
+</body>
+</html>

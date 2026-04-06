@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dream Journal - DreamVault</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    .dream-list {
+      max-width: 800px;
+      width: 90%;
+      margin: 120px auto 40px auto;
+    }
+
+    .dream-card {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(15px);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      transition: 0.3s;
+    }
+
+    .dream-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.4);
+    }
+
+    .tag {
+      background: rgba(255,255,255,0.2);
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      margin-right: 10px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      color: white;
+    }
+
+    .view-btn { background: #a78bfa; }
+    .analyze-btn { background: #22c55e; }
+
+    .happy { border-left: 8px solid #ff9ff3; }
+    .nightmare { border-left: 8px solid #ff4d6d; }
+    .weird { border-left: 8px solid #a78bfa; }
+    .normal { border-left: 8px solid #60a5fa; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(10, 10, 20, 0.55);
+      backdrop-filter: blur(12px);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(25px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: white;
+
+      transform: scale(0.8);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .modal.show .modal-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .close-btn {
+      float: right;
+      font-size: 24px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div style="display:flex; gap:15px; align-items:center;">
+      <a href="index.html" class="back-btn">←</a>
+      <div class="logo">DreamVault ✨</div>
+    </div>
+    <a href="index.html">Home</a>
+  </div>
+
+  <!-- LIST -->
+  <section class="hero">
+    <div class="dream-list" id="dreamList"></div>
+  </section>
+
+  <!-- VIEW MODAL -->
+  <div id="viewModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeView()">&times;</span>
+      <div class="tag" id="viewTag"></div>
+      <h2 id="viewTitle"></h2>
+      <div id="viewText"></div>
+      <p id="viewDate"></p>
+    </div>
+  </div>
+
+  <!-- AI MODAL -->
+  <div id="aiModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeAI()">&times;</span>
+      <h2>🧠 Dream Analysis</h2>
+      <h3 id="aiEmotion"></h3>
+      <p id="aiMeaning"></p>
+      <p id="aiAdvice"></p>
+    </div>
+  </div>
+
+  <script>
+    const dreamList = document.getElementById("dreamList");
+    let dreams = [];
+
+    // 🔥 LOAD FROM SQL
+    function loadDreams() {
+      fetch("get_dreams.php")
+        .then(res => res.json())
+        .then(data => {
+          dreams = data;
+          displayDreams();
+        })
+        .catch(err => console.log(err));
+    }
+
+    function displayDreams() {
+      dreamList.innerHTML = "";
+
+      dreams.forEach((dream, index) => {
+        const preview = (dream.description || "").substring(0, 100) + "...";
+
+        const div = document.createElement("div");
+        div.classList.add("dream-card");
+
+        const tag = (dream.tag || "").toLowerCase();
+        if (tag.includes("happy")) div.classList.add("happy");
+        else if (tag.includes("nightmare")) div.classList.add("nightmare");
+        else if (tag.includes("weird")) div.classList.add("weird");
+        else div.classList.add("normal");
+
+        div.innerHTML = `
+          <div class="tag">${dream.tag || "✨ Dream"}</div>
+          <h3>${dream.title || "Untitled Dream"}</h3>
+          <p>${preview}</p>
+
+          <button class="btn view-btn" onclick="viewDream(${index})">View</button>
+          <button class="btn analyze-btn" onclick="analyzeDream(${index})">Analyze</button>
+        `;
+
+        dreamList.appendChild(div);
+      });
+    }
+
+    function viewDream(index) {
+      const dream = dreams[index];
+
+      document.getElementById("viewTitle").innerText = dream.title;
+      document.getElementById("viewText").innerText = dream.description;
+      document.getElementById("viewTag").innerText = dream.tag;
+
+      const modal = document.getElementById("viewModal");
+      modal.style.display = "flex";
+      setTimeout(() => modal.classList.add("show"), 10);
+    }
+
+    function closeView() {
+      const modal = document.getElementById("viewModal");
+      modal.classList.remove("show");
+      setTimeout(() => modal.style.display = "none", 300);
+    }
+
+    function analyzeDream(index) {
+      const dream = (dreams[index].description || "").toLowerCase();
+
+      let emotion = "🌙 Neutral";
+      let meaning = "Creative or random dream.";
+      let advice = "Not all dreams need meaning.";
+
+      if (dream.includes("fall") || dream.includes("chase")) {
+        emotion = "😨 Anxiety";
+        meaning = "You may feel a lack of control.";
+        advice = "Try managing stress.";
+      }
+      else if (dream.includes("fly")) {
+        emotion = "🚀 Freedom";
+        meaning = "You feel ambitious.";
+        advice = "You may be ready to grow.";
+      }
+
+      showAI(emotion, meaning, advice);
+    }
+
+    function showAI(emotion, meaning, advice) {
+      document.getElementById("aiEmotion").innerText = emotion;
+      document.getElementById("aiMeaning").innerText = meaning;
+      document.getElementById("aiAdvice").innerText = "💡 " + advice;
+
+      const modal = document.getElementById("aiModal");
+      modal.style.display = "flex";
+      setTimeout(() => modal.classList.add("show"), 10);
+    }
+
+    function closeAI() {
+      const modal = document.getElementById("aiModal");
+      modal.classList.remove("show");
+      setTimeout(() => modal.style.display = "none", 300);
+    }
+
+    window.onclick = function(e) {
+      if (e.target.id === "viewModal") closeView();
+      if (e.target.id === "aiModal") closeAI();
+    };
+
+    // 🔥 START
+    loadDreams();
+  </script>
+
+</body>
+</html>
